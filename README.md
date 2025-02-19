@@ -1,11 +1,11 @@
-# SQSHandler
+# S3Handler
 
-[![Coverage Status](https://coveralls.io/repos/github/Sagacify/sqs-handler/badge.svg?branch=master)](https://coveralls.io/github/Sagacify/sqs-handler?branch=master)
-[![npm version](https://img.shields.io/npm/v/@sagacify/sqs-handler.svg)](https://www.npmjs.com/package/@sagacify/sqs-handler)
+[![Coverage Status](https://coveralls.io/repos/github/Sagacify/s3-handler/badge.svg?branch=master)](https://coveralls.io/github/Sagacify/s3-handler?branch=master)
+[![npm version](https://img.shields.io/npm/v/@sagacify/s3-handler.svg)](https://www.npmjs.com/package/@sagacify/s3-handler)
 
 ## Description
 
-SQSHandler is a package meant to simplify the handeling of SQS messages.
+S3Handler is a package meant to simplify the handeling of S3 messages.
 It does automatic JSON parsing/stringifying of the message's body,
 attiributes composition and parsing of message's attributes.
 This package has a peer-dependency on the AWS sdk v3.
@@ -13,293 +13,90 @@ This package has a peer-dependency on the AWS sdk v3.
 ## Installation
 
 ```sh
-$ npm install @sagacify/sqs-handler
+npm install @sagacify/s3-handler
 ```
 
 ## Usage
 
 ### Import in your project
+
 ```js
-import { SQSClient } from '@aws-sdk/client-sqs';
-import { SQSHandler } from '@sagacify/sqs-handler';
+import { S3Client } from '@aws-sdk/client-s3';
+import { S3Handler } from '@sagacify/s3-handler';
 
-const sqsClient = new SQSClient({ region: 'eu-west-1'});
+const s3Client = new S3Client({ region: 'eu-west-1' });
 
-const sqsHandler = new SQSHandler<{ data: string }>(
-  sqsClient,
-  'https://sqs.eu-west-1.amazonaws.com/23452042942/some-sqs-queue', {
-    VisibilityTimeout: 120,
-    WaitTimeSeconds: 0
-  }
-);
+const s3Handler = new S3Handler(s3Client, 'my-bucket-name');
 
-// Send a message
-await sqsHandler.send({ data: 'value' }, {
-  MessageAttributes: {
-    numberAttribute: 100,
-    stringAttribute: 'text',
-    binaryAttribute: Buffer.from('01011101')
-  }
-});
+// Get object
+await s3Handler.getObject('my-key');
 
-// Send several messages
-await sqsHandler.sendBatch([
-  {
-    Id: '1',
-    MessageBody: { data: 'value1' }
-  }, {
-    Id: '2',
-    MessageBody: { data: 'value2' }
-  }, , {
-    Id: '3',
-    MessageBody: { data: 'value3' }
-  }
-]);
+// Put object
+await s3Handler.putObject('my-key', Buffer.from('hello-world'));
 
-// Receive a message
-const { receiptHandle, Body, MessageAttributes } = await sqsHandler.receiveOne({
-  MessageAttributeNames: [
-    'numberAttribute',
-    'stringAttribute',
-    'binaryAttribute'
-  ]
-});
+// List objects
+await s3Handler.listObjects('my-prefix');
 
-// Receive several messages
-const messages = await sqsHandler.receive({
-  MaxNumberOfMessages: 3
-  MessageAttributeNames: [
-    'numberAttribute',
-    'stringAttribute',
-    'binaryAttribute'
-  ]
-});
-
-// Delete a message
-await sqsHandler.destroy(receiptHandle);
-
-// Delete several messages
-await sqsHandler.destroyBatch([
-  {
-    Id: 1,
-    ReceiptHandle: 'a1sd4f3'
-  }, {
-    Id: 2,
-    ReceiptHandle: 'ba1sd4f3'
-  }, {
-    Id: 3,
-    ReceiptHandle: 'c1sd4f3'
-  }
-]);
+// Delete object
+await s3Handler.deleteObject('my-key');
 ```
 
 ### Readable Stream Usage
 
 ```js
-import { SQSClient } from '@aws-sdk/client-sqs';
-import { SQSHandler } from '@sagacify/sqs-handler';
+import { S3Client } from '@aws-sdk/client-s3';
+import { S3Handler } from '@sagacify/s3-handler';
 
-const sqsClient = new SQSClient({ region: 'eu-west-1'});
+const s3Client = new S3Client({ region: 'eu-west-1' });
 
-const sqsHandler = new SQSHandler<{ data: string }>(
-  sqsClient,
-  'https://sqs.eu-west-1.amazonaws.com/23452042942/some-sqs-queue', {
-    VisibilityTimeout: 120,
-    WaitTimeSeconds: 0
-  }
-);
+const s3Handler = new S3Handler(s3Client, 'my-bucket-name');
 
-const readable = sqsHandler.readableStream();
+const readable = s3Handler.getObjectStream('my-super-heavy-file');
 
 readable.on('data', (message) => {
   console.log(message);
-  sqsHandler.destroy(message.receiptHandle);
 });
-
-const autoDestroyReadable = sqsHandeler.readableStream({ autoDestroy: true });
-autoDestroyReadable.on('data', (message) => console.log(message));
 ```
 
-### Writable Stream Usage
+### Upload Stream Usage
 
 ```js
-import { SQSClient } from '@aws-sdk/client-sqs';
-import { SQSHandler } from '@sagacify/sqs-handler';
+import { S3Client } from '@aws-sdk/client-s3';
+import { S3Handler } from '@sagacify/s3-handler';
 
-const sqsClient = new SQSClient({ region: 'eu-west-1'});
+const s3Client = new S3Client({ region: 'eu-west-1' });
 
-const sqsHandler = new SQSHandler<{ data: string }>(
-  sqsInstance,
-  'https://sqs.eu-west-1.amazonaws.com/23452042942/some-sqs-queue', {
-    VisibilityTimeout: 120,
-    WaitTimeSeconds: 0
-  }
-);
+const s3Handler = new S3Handler(s3Client, 'my-bucket-name');
 
-const writable = sqsHandler.writableStream();
+const parallelUploadStream = s3Handler.uploadStream('my-key', Buffer.from('my-super-heavy-file'));
 
-writable.write({
-  { data: 'value' }
-});
+await parallelUpload.done();
 ```
-
-### API
-
-**constructor(sqsClient, queueUrl, options)**
-
-- sqsClient: an SQSClient instance
-- queueUrl: url of the queue
-- options:
-  - VisibilityTimeout: visibility timeout in seconds (default: 60)
-  - WaitTimeSeconds: wait time in secondes before sending messages (default: 0)
-
-**receive(options)**
-
-Equivalent of [ReceiveMessageCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/sqs/command/ReceiveMessageCommand) with automatique parsing.
-
-*Options differences:*
-
- - QueueUrl: useless, SQSHandler.queueUrl will be used instead
- - VisibilityTimeout: SQSHandler.visibilityTimeout will be used instead
- - WaitTimeSeconds: SQSHandler.waitTimeSeconds will be used instead
-
- *Response differrences:*
-
- - Messages: Content of Messages is directly returned as an Array.
- - Messages[].Body: automatically JSON parsed
- - Messages[].MessageAttributes: automatically parsed as simple object with the right type
-
- **receiveOne(options)**
-
-Equivalent of [ReceiveMessageCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/sqs/command/ReceiveMessageCommand) for one message with automatique parsing.
-
-*Options differences:*
-
- - QueueUrl: useless, SQSHandler.queueUrl will be used instead
- - VisibilityTimeout: SQSHandler.visibilityTimeout will be used instead
- - WaitTimeSeconds: SQSHandler.waitTimeSeconds will be used instead
- - MaxNumberOfMessages: forced at 1
-
- *Response differrences:*
-
- - Messages: Content of Messages[0] directly returned as an Object or null if no messages.
- - Messages[0].Body: automatically JSON parsed
- - Messages[0].MessageAttributes: automatically parsed as simple object with the right type
-
-**send(messageBody, options)**
-
-Equivalent of [SendMessageCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/sqs/command/SendMessageCommand) with automatique composition.
-
-*Options differences:*
-
- - QueueUrl: useless, SQSHandler.queueUrl will be used instead
- - VisibilityTimeout: SQSHandler.visibilityTimeout will be used instead
- - WaitTimeSeconds: SQSHandler.waitTimeSeconds will be used instead
- - MessageAttributes: simple object that will be automatically composed in { DataType, StringValue|BinaryValue }
- - MessageBody: taken from messageBody and automatically JSON stringified
-
- *Response differrences:*
-
-(None)
-
-**sendBatch(entries)**
-
-Equivalent of [SendMessageBatchCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/sqs/command/SendMessageBatchCommand) with automatique composition.
-
-*Options differences:*
-
- - entries[].QueueUrl: useless, SQSHandler.queueUrl will be used instead
- - entries[].VisibilityTimeout: SQSHandler.visibilityTimeout will be used instead
- - entries[].WaitTimeSeconds: SQSHandler.waitTimeSeconds will be used instead
- - entries[].MessageAttributes: simple object that will be automatically composed in { DataType, StringValue|BinaryValue }
- - entries[].MessageBody: taken from messageBody and automatically JSON stringified
-
- *Response differrences:*
-
-(None)
-
-**detroy(receiptHandle)**
-
-Equivalent of [DeleteMessageCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/sqs/command/DeleteMessageCommand) with automatique composition.
-
-*Options differences:*
-
- - QueueUrl: useless, SQSHandler.queueUrl will be used instead
- - VisibilityTimeout: SQSHandler.visibilityTimeout will be used instead
- - WaitTimeSeconds: SQSHandler.waitTimeSeconds will be used instead
-
- *Response differrences:*
-
-(None)
-
-**detroyBatch(receiptHandle)**
-
-Equivalent of [DeleteMessageBatchCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/sqs/command/DeleteMessageBatchCommand) with automatique composition.
-
-*Options differences:*
-
- - entries[].QueueUrl: useless, SQSHandler.queueUrl will be used instead
- - entries[].VisibilityTimeout: SQSHandler.visibilityTimeout will be used instead
- - entries[].WaitTimeSeconds: SQSHandler.waitTimeSeconds will be used instead
-
- *Response differrences:*
-
-(None)
-
-- sendBatch(entries) equivalent of SQSClient.sendMessageBatch with automatique composing
-- destroy(receiptHandle) fully equivalent of SQSClient.deleteMessage
-- destroyBatch(entries) fully equivalent of SQSClient.deleteMessageBatch
-
-Only message related operations have been implemented.
-For queue related operations use directly the SQS instance.
-
-**readableStream(options)**
-
-returns a readable stream from the SQS queue.
-Each message received from the queue will trigger the `data` event.
-
-*Options:*
-
-- autoDestroy: automatically destroy received message from the queue once pushed to the stream buffer, if set to false you will have to destroy the message yourself otherwise it will be available to be consumed after the *visibilityTimeout* (default: false)
-- autoClose: automatically close the stream when no more message are received from the queue (default: false)
-
-see **receive** for other options details.
-
-**writableStream(options)**
-
-returns a writable stream to the SQS queue.
-Each message written to this stream will be pushed to the queue with the specified options.
-
-*Options:*
-
-- batchSize: set the number of messages to be sent per batch (default: 1)
-
-see **send** for other options details.
 
 ## Npm scripts
 
 ### Running code formating
 
 ```sh
-$ npm run format
+npm run format
 ```
 
 ### Running tests
 
 ```sh
-$ npm test
+npm test
 ```
 
 ### Running lint tests
 
 ```sh
-$ npm test:lint
+npm test:lint
 ```
 
 ### Running coverage tests
 
 ```sh
-$ npm test:cover
+npm test:cover
 ```
 
 This will create a coverage folder with all the report in `coverage/index.html`
@@ -307,21 +104,21 @@ This will create a coverage folder with all the report in `coverage/index.html`
 ### Running all tests
 
 ```sh
-$ npm test:all
+npm test:all
 ```
 
-*Note: that's the one you want to use most of the time*
+_Note: that's the one you want to use most of the time_
 
 ## Reporting bugs and contributing
 
 If you want to report a bug or request a feature, please open an issue.
-If want to help us improve sqs-handler, fork and make a pull request.
+If want to help us improve s3-handler, fork and make a pull request.
 Please use commit format as described [here](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines).
 And don't forget to run `npm run format` before pushing commit.
 
 ## Repository
 
-- [https://github.com/sagacify/sqs-handler](https://github.com/sagacify/sqs-handler)
+- [https://github.com/sagacify/s3-handler](https://github.com/sagacify/s3-handler)
 
 ## License
 
