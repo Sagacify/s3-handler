@@ -1,0 +1,128 @@
+{
+  "name": "@sagacify/s3-handler",
+  "version": "1.0.0",
+  "description": "S3 messages handling package",
+  "main": "build/S3Handler.js",
+  "directories": {
+    "test": "test"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "keywords": [
+    "aws",
+    "s3",
+    "stream",
+    "streams"
+  ],
+  "author": "@themoums",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sagacify/s3-handler.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Sagacify/s3-handler/issues"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "fix:lint": "eslint --fix .",
+    "test:lint": "eslint -f stylish 'src/**/*.ts'",
+    "test:types": "tsc --noEmit",
+    "test:spec": "env NODE_ENV=test mocha .",
+    "test:cover": "nyc npm run test:spec",
+    "test:watch": "env NODE_ENV=test mocha --watch",
+    "test": "npm run test:lint && npm run test:types && npm run test:cover"
+  },
+  "devDependencies": {
+    "@aws-sdk/types": "^3.734.0",
+    "@sagacify/eslint-config": "^1.2.0",
+    "@smithy/util-stream": "^4.1.1",
+    "@types/chai": "^4.3.1",
+    "@types/mocha": "^10.0.9",
+    "@types/node": "^20.16.11",
+    "@types/sinon": "^10.0.11",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "aws-sdk-client-mock": "^4.1.0",
+    "chai": "^5.1.1",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^8.10.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-promise": "^6.6.0",
+    "mocha": "^10.7.3",
+    "nyc": "^15.1.0",
+    "prettier": "^2.6.2",
+    "sinon": "^19.0.2",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3"
+  },
+  "eslintConfig": {
+    "ignorePatterns": [
+      "**/build/*.js"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "project": "./tsconfig.json"
+    },
+    "plugins": [
+      "@typescript-eslint",
+      "prettier"
+    ],
+    "extends": [
+      "plugin:@typescript-eslint/eslint-recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:prettier/recommended"
+    ],
+    "env": {
+      "node": true,
+      "mocha": true
+    }
+  },
+  "prettier": {
+    "printWidth": 100,
+    "singleQuote": true,
+    "trailingComma": "none",
+    "bracketSpacing": true,
+    "semi": true,
+    "arrowParens": "always"
+  },
+  "mocha": {
+    "require": "tsx",
+    "exit": true,
+    "spec": [
+      "test/**/*.ts"
+    ],
+    "watch-files": [
+      "src/**/*.ts",
+      "test/**/*.ts"
+    ]
+  },
+  "nyc": {
+    "check-coverage": true,
+    "lines": 80,
+    "include": [
+      "src/**/*.ts"
+    ]
+  },
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/git",
+      "@semantic-release/github"
+    ]
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.750.0",
+    "@aws-sdk/lib-storage": "^3.750.0",
+    "@aws-sdk/s3-request-presigner": "^3.750.0"
+  }
+}
