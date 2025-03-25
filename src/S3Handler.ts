@@ -5,6 +5,7 @@ import {
   DeleteObjectsCommandInput,
   GetObjectCommand,
   GetObjectCommandInput,
+  GetObjectCommandOutput,
   ListObjectsV2Command,
   ListObjectsV2CommandInput,
   ObjectIdentifier,
@@ -14,7 +15,6 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Configuration, Upload } from '@aws-sdk/lib-storage';
-import { Readable } from 'node:stream';
 import { RequestPresigningArguments, StreamingBlobPayloadInputTypes } from '@smithy/types';
 
 export class S3Handler {
@@ -30,35 +30,40 @@ export class S3Handler {
     return this.client;
   }
 
-  async getObject(
-    key: string,
-    options: Omit<GetObjectCommandInput, 'Bucket' | 'Key'> = {}
-  ): Promise<Buffer | null> {
-    const response = await this.client.send(
+  async getObject(key: string, options: Omit<GetObjectCommandInput, 'Bucket' | 'Key'> = {}) {
+    return await this.client.send(
       new GetObjectCommand({
         Bucket: this.bucket,
         Key: key,
         ...options
       })
     );
-
-    if (response.Body) {
-      const outputReadable = await response.Body.transformToByteArray();
-      return Buffer.from(outputReadable);
-    }
-
-    return null;
   }
 
-  async getObjectStream(key: string, options: Omit<GetObjectCommandInput, 'Bucket' | 'Key'> = {}) {
-    const response = await this.client.send(
-      new GetObjectCommand({
-        Bucket: this.bucket,
-        Key: key,
-        ...options
-      })
-    );
-    return response.Body as Readable;
+  async getObjectBuffer(
+    key: string,
+    options: Omit<GetObjectCommandInput, 'Bucket' | 'Key'> = {}
+  ): Promise<
+    Omit<GetObjectCommandOutput, 'Body'> & {
+      Body?: Buffer;
+    }
+  > {
+    const response = await this.getObject(key, options);
+
+    if (response.Body === undefined) {
+      // explicitly override Body with undefined so that its type matches the expected type
+      return { ...response, Body: undefined };
+    }
+
+    const byteArray = await response.Body.transformToByteArray();
+    // This creates a view of the <ArrayBuffer> without copying the underlying memory
+    // See: https://nodejs.org/api/buffer.html#static-method-bufferfromarraybuffer-byteoffset-length
+    const bodyBuffer = Buffer.from(byteArray.buffer, byteArray.byteOffset, byteArray.byteLength);
+
+    return {
+      ...response,
+      Body: bodyBuffer
+    };
   }
 
   async putFolder(folderName: string) {
@@ -72,11 +77,11 @@ export class S3Handler {
 
   async putObject(
     key: string,
-    buffer: Buffer,
+    body: PutObjectCommandInput['Body'],
     options: Omit<PutObjectCommandInput, 'Bucket' | 'Key' | 'Body'> = {}
   ) {
     const putObjectCommand = new PutObjectCommand({
-      Body: buffer,
+      Body: body,
       Bucket: this.bucket,
       Key: key,
       ...options
@@ -141,7 +146,7 @@ export class S3Handler {
     return this.client.send(deleteObjectsCommand);
   }
 
-  async generatePresignedUrl(
+  async generateGetPresignedUrl(
     key: string,
     signedUrlOptions: RequestPresigningArguments = {},
     getObjectOptions: Omit<GetObjectCommandInput, 'Bucket' | 'Key'> = {}
@@ -149,5 +154,15 @@ export class S3Handler {
     const command = new GetObjectCommand({ Bucket: this.bucket, Key: key, ...getObjectOptions });
     return getSignedUrl(this.client, command, signedUrlOptions);
   }
+
+  async generatePutPresignedUrl(
+    key: string,
+    signedUrlOptions: RequestPresigningArguments = {},
+    getObjectOptions: Omit<PutObjectCommandInput, 'Bucket' | 'Key'> = {}
+  ) {
+    const command = new PutObjectCommand({ Bucket: this.bucket, Key: key, ...getObjectOptions });
+    return getSignedUrl(this.client, command, signedUrlOptions);
+  }
 }
+
 export default S3Handler;

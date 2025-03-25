@@ -5,14 +5,14 @@ import { S3Handler } from '../../src/S3Handler';
 import { Readable } from 'stream';
 import { sdkStreamMixin } from '@smithy/util-stream';
 
-describe('S3Handler.getObjectStream', () => {
+describe('S3Handler.getObjectBuffer', () => {
   const s3ClientMock = mockClient(S3Client);
 
-  beforeEach(() => {
+  afterEach(() => {
     s3ClientMock.reset();
   });
 
-  it('should get an object stream', async () => {
+  it('should get an object buffer', async () => {
     const stream = new Readable();
     stream.push('hello world');
     stream.push(null); // end of stream
@@ -21,19 +21,19 @@ describe('S3Handler.getObjectStream', () => {
 
     s3ClientMock.on(GetObjectCommand).resolvesOnce({ Body: sdkStream });
 
-    const s3Handler = new S3Handler(new S3Client({}), 'my-dummy-bucket');
+    const s3Handler = new S3Handler(s3ClientMock as unknown as S3Client, 'my-dummy-bucket');
 
-    const objectStream = await s3Handler.getObjectStream('my-key');
+    const responseBuffer = await s3Handler.getObjectBuffer('my-key');
 
     expect(s3ClientMock.commandCalls(GetObjectCommand).length).equal(1);
     expect(s3ClientMock.commandCalls(GetObjectCommand)[0].args[0].input).deep.equal({
       Bucket: 'my-dummy-bucket',
       Key: 'my-key'
     });
-    expect(objectStream).equal(sdkStream);
+    expect(responseBuffer.Body).deep.equal(Buffer.from('hello world'));
   });
 
-  it('should get an object stream with additional options', async () => {
+  it('should get an object buffer with additional options', async () => {
     const stream = new Readable();
     stream.push('hello world');
     stream.push(null); // end of stream
@@ -42,9 +42,9 @@ describe('S3Handler.getObjectStream', () => {
 
     s3ClientMock.on(GetObjectCommand).resolvesOnce({ Body: sdkStream });
 
-    const s3Handler = new S3Handler(new S3Client({}), 'my-dummy-bucket');
+    const s3Handler = new S3Handler(s3ClientMock as unknown as S3Client, 'my-dummy-bucket');
 
-    const objectStream = await s3Handler.getObjectStream('my-key', { Range: 'bytes=0-5' });
+    const responseBuffer = await s3Handler.getObjectBuffer('my-key', { Range: 'bytes=0-5' });
 
     expect(s3ClientMock.commandCalls(GetObjectCommand).length).equal(1);
     expect(s3ClientMock.commandCalls(GetObjectCommand)[0].args[0].input).deep.equal({
@@ -52,6 +52,6 @@ describe('S3Handler.getObjectStream', () => {
       Key: 'my-key',
       Range: 'bytes=0-5'
     });
-    expect(objectStream).equal(sdkStream);
+    expect(responseBuffer.Body).deep.equal(Buffer.from('hello world'));
   });
 });

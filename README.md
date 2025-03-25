@@ -31,6 +31,9 @@ const s3Handler = new S3Handler(s3Client, 'my-bucket-name');
 // Get object
 await s3Handler.getObject('my-key');
 
+// Get object Buffer (response.Body is accumulate in a Buffer)
+await s3Handler.getObjectBuffer('my-key');
+
 // Put object
 await s3Handler.putObject('my-key', Buffer.from('hello-world'));
 
@@ -39,6 +42,9 @@ await s3Handler.listObjects('my-prefix');
 
 // Delete object
 await s3Handler.deleteObject('my-key');
+
+// Delete several objects
+await s3Handler.deleteObjects([{ Key: 'my-key1' }, {Key: 'my-key2'}]);
 ```
 
 ### Readable Stream Usage
@@ -51,7 +57,8 @@ const s3Client = new S3Client({ region: 'eu-west-1' });
 
 const s3Handler = new S3Handler(s3Client, 'my-bucket-name');
 
-const readable = s3Handler.getObjectStream('my-super-heavy-file');
+const response = s3Handler.getObject('my-super-heavy-file');
+const readable = response.Body as Readable;
 
 readable.on('data', (message) => {
   console.log(message);
