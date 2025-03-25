@@ -1,3 +1,15 @@
+# [2.0.0](https://github.com/Sagacify/s3-handler/compare/v1.0.0...v2.0.0) (2025-03-25)
+
+
+### Features
+
+* change the interface ([77ef1be](https://github.com/Sagacify/s3-handler/commit/77ef1beced6d04aedb606ffec57e9aaba7522ee3))
+
+
+### BREAKING CHANGES
+
+* change methods signatures
+
 # 1.0.0 (2025-02-19)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@sagacify/s3-handler",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "S3 messages handling package",
   "main": "build/S3Handler.js",
   "directories": {
