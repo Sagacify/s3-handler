@@ -7,7 +7,7 @@
     "test": "test"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0"
   },
   "keywords": [
     "aws",
@@ -33,6 +33,11 @@
     "test:cover": "nyc npm run test:spec",
     "test:watch": "env NODE_ENV=test mocha --watch",
     "test": "npm run test:lint && npm run test:types && npm run test:cover"
+  },
+  "peerDependencies": {
+    "@aws-sdk/client-sqs": "^3.667.0",
+    "@aws-sdk/lib-storage": "^3.750.0",
+    "@aws-sdk/s3-request-presigner": "^3.750.0"
   },
   "devDependencies": {
     "@aws-sdk/types": "^3.734.0",
@@ -119,10 +124,5 @@
       "@semantic-release/git",
       "@semantic-release/github"
     ]
-  },
-  "dependencies": {
-    "@aws-sdk/client-s3": "^3.750.0",
-    "@aws-sdk/lib-storage": "^3.750.0",
-    "@aws-sdk/s3-request-presigner": "^3.750.0"
   }
 }
