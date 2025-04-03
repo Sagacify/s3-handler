@@ -6,6 +6,7 @@ import {
   GetObjectCommand,
   GetObjectCommandInput,
   GetObjectCommandOutput,
+  HeadObjectCommand,
   ListObjectsV2Command,
   ListObjectsV2CommandInput,
   ObjectIdentifier,
@@ -38,6 +39,15 @@ export class S3Handler {
         ...options
       })
     );
+  }
+
+  async headObject(bucket: string, key: string) {
+    const headObjectCommand = new HeadObjectCommand({
+      Bucket: bucket,
+      Key: key
+    });
+
+    return this.client.send(headObjectCommand);
   }
 
   async getObjectBuffer(
