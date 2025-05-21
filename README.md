@@ -97,27 +97,27 @@ npm run format
 npm test
 ```
 
+_Note: that's the one you want to use most of the time_
+
 ### Running lint tests
 
 ```sh
-npm test:lint
+npm run test:lint
 ```
 
 ### Running coverage tests
 
 ```sh
-npm test:cover
+npm run test:cover
 ```
 
 This will create a coverage folder with all the report in `coverage/index.html`
 
-### Running all tests
+### Running types tests
 
 ```sh
-npm test:all
+npm run test:types
 ```
-
-_Note: that's the one you want to use most of the time_
 
 ## Reporting bugs and contributing
 
