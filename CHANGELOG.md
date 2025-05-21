@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/Sagacify/s3-handler/compare/v2.0.0...v2.1.0) (2025-05-21)
+
+
+### Features
+
+* **copy:** add the copy method to the S3Handler ([c0b5e6d](https://github.com/Sagacify/s3-handler/commit/c0b5e6d6e26a0e717cdf79236a9bfe1a62cdbf54))
+
 # [2.0.0](https://github.com/Sagacify/s3-handler/compare/v1.0.0...v2.0.0) (2025-03-25)
 
 
