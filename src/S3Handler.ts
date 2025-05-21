@@ -1,4 +1,6 @@
 import {
+  CopyObjectCommand,
+  CopyObjectCommandInput,
   DeleteObjectCommand,
   DeleteObjectCommandInput,
   DeleteObjectsCommand,
@@ -144,6 +146,20 @@ export class S3Handler {
     });
 
     return this.client.send(deleteObjectsCommand);
+  }
+
+  async copyObject(
+    sourceKey: string,
+    destinationKey: string,
+    options: Omit<CopyObjectCommandInput, 'Bucket' | 'Key' | 'CopySource'> = {}
+  ) {
+    const copyObjectCommand = new CopyObjectCommand({
+      Bucket: this.bucket,
+      Key: destinationKey,
+      CopySource: sourceKey,
+      ...options
+    });
+    return this.client.send(copyObjectCommand);
   }
 
   async generateGetPresignedUrl(

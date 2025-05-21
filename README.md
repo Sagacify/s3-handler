@@ -44,7 +44,10 @@ await s3Handler.listObjects('my-prefix');
 await s3Handler.deleteObject('my-key');
 
 // Delete several objects
-await s3Handler.deleteObjects([{ Key: 'my-key1' }, {Key: 'my-key2'}]);
+await s3Handler.deleteObjects([{ Key: 'my-key1' }, { Key: 'my-key2' }]);
+
+// Copy object
+await s3Handler.copyObject('bucket/my-key', 'my-new-key');
 ```
 
 ### Readable Stream Usage
