@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/Sagacify/s3-handler/compare/v2.1.0...v2.2.0) (2025-06-13)
+
+
+### Features
+
+* **head:** adds head object command ([c5555be](https://github.com/Sagacify/s3-handler/commit/c5555be90eb55019b0cdcaabc6c4789199a12c75))
+
 # [2.1.0](https://github.com/Sagacify/s3-handler/compare/v2.0.0...v2.1.0) (2025-05-21)
 
 
