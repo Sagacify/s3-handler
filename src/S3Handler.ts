@@ -8,6 +8,9 @@ import {
   GetObjectCommand,
   GetObjectCommandInput,
   GetObjectCommandOutput,
+  HeadObjectCommand,
+  HeadObjectCommandInput,
+  HeadObjectCommandOutput,
   ListObjectsV2Command,
   ListObjectsV2CommandInput,
   ObjectIdentifier,
@@ -178,6 +181,19 @@ export class S3Handler {
   ) {
     const command = new PutObjectCommand({ Bucket: this.bucket, Key: key, ...getObjectOptions });
     return getSignedUrl(this.client, command, signedUrlOptions);
+  }
+
+  async headObject(
+    key: string,
+    options: Omit<HeadObjectCommandInput, 'Bucket' | 'Key'> = {}
+  ): Promise<HeadObjectCommandOutput> {
+    const headObjectCommand = new HeadObjectCommand({
+      Bucket: this.bucket,
+      Key: key,
+      ...options
+    });
+
+    return this.client.send(headObjectCommand);
   }
 }
 
