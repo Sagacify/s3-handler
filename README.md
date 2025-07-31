@@ -2,6 +2,9 @@
 
 [![Coverage Status](https://coveralls.io/repos/github/Sagacify/s3-handler/badge.svg?branch=master)](https://coveralls.io/github/Sagacify/s3-handler?branch=master)
 [![npm version](https://img.shields.io/npm/v/@sagacify/s3-handler.svg)](https://www.npmjs.com/package/@sagacify/s3-handler)
+[![Issues](https://img.shields.io/github/issues/Sagacify/s3-handler)](https://www.npmjs.com/package/@sagacify/s3-handler)
+[![License](https://img.shields.io/github/license/Sagacify/s3-handler)](https://www.npmjs.com/package/@sagacify/s3-handler)
+[![Stars](https://img.shields.io/github/stars/Sagacify/s3-handler)](https://www.npmjs.com/package/@sagacify/s3-handler)
 
 ## Description
 
@@ -48,6 +51,15 @@ await s3Handler.deleteObjects([{ Key: 'my-key1' }, { Key: 'my-key2' }]);
 
 // Copy object
 await s3Handler.copyObject('bucket/my-key', 'my-new-key');
+```
+
+There is a second way to create your handler.
+The static method `createHandler` will allow you to remove the instantiation of the Client on your code. This will use `@aws-sdk/client-s3` under the hood.
+
+```js
+import { S3Handler } from '@sagacify/s3-handler';
+
+const s3Handler = new S3Handler.createHandler({ region: 'eu-west-1' }, 'my-bucket-name');
 ```
 
 ### Readable Stream Usage
