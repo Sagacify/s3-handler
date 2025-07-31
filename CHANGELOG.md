@@ -1,3 +1,10 @@
+# [2.3.0](https://github.com/Sagacify/s3-handler/compare/v2.2.0...v2.3.0) (2025-07-31)
+
+
+### Features
+
+* **create-handler:** add static method to avoid double import of client ([bc97954](https://github.com/Sagacify/s3-handler/commit/bc97954ae02f038f65b3c2fc08f45904370cb9b6))
+
 # [2.2.0](https://github.com/Sagacify/s3-handler/compare/v2.1.0...v2.2.0) (2025-06-13)
 
 
