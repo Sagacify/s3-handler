@@ -16,7 +16,8 @@ import {
   ObjectIdentifier,
   PutObjectCommand,
   PutObjectCommandInput,
-  S3Client
+  S3Client,
+  S3ClientConfig
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Configuration, Upload } from '@aws-sdk/lib-storage';
@@ -29,6 +30,16 @@ export class S3Handler {
   constructor(client: S3Client, bucket: string) {
     this.client = client;
     this.bucket = bucket;
+  }
+
+  /**
+   * **Note:** *Credentials can be loaded from the* `~/.aws/config` *file in development*
+   * @param options - Optional configuration for the S3 client
+   * @param bucket - The name of the S3 bucket
+   * @returns an instance of `S3Handler`
+   */
+  static createHandler(options: S3ClientConfig = {}, bucket: string): S3Handler {
+    return new this(new S3Client(options), bucket);
   }
 
   getClient() {
